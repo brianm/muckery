@@ -3,6 +3,7 @@ package org.skife.muckery.parboiled;
 import org.junit.Test;
 import org.parboiled.Parboiled;
 import org.parboiled.parserunners.ReportingParseRunner;
+import org.parboiled.support.ParseTreeUtils;
 import org.parboiled.support.ParsingResult;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -12,10 +13,10 @@ public class ParboiledTest
     @Test
     public void testPredicate() throws Exception
     {
-PredicateParser p = Parboiled.createParser(PredicateParser.class);
-ParsingResult<Object> out = new ReportingParseRunner<>(
-    p.Predicate()).run("event.sleepState == 'tired' " +
-                       "&& ian != 'wombat squirrel 7'");
+        PredicateParser p = Parboiled.createParser(PredicateParser.class);
+        ParsingResult<Object> out = new ReportingParseRunner<>(
+            p.Predicate()).run("event.sleepState == 'tired' " +
+                               "&& ian != 'wombat squirrel 7'");
 
         assertThat(out.parseErrors).isEmpty();
         assertThat(out.matched).isTrue();
@@ -29,7 +30,7 @@ ParsingResult<Object> out = new ReportingParseRunner<>(
 
         assertThat(out.parseErrors).isEmpty();
         assertThat(out.matched).isTrue();
-//        System.out.println(ParseTreeUtils.printNodeTree(out));
+        System.out.println(ParseTreeUtils.printNodeTree(out));
     }
 
     @Test
@@ -40,7 +41,6 @@ ParsingResult<Object> out = new ReportingParseRunner<>(
 
         assertThat(out.parseErrors).isEmpty();
         assertThat(out.matched).isTrue();
-//        System.out.println(ParseTreeUtils.printNodeTree(out));
+        System.out.println(ParseTreeUtils.printNodeTree(out));
     }
-
 }
