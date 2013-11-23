@@ -3,6 +3,7 @@ package org.skife.muckery.parboiled;
 import org.junit.Test;
 import org.parboiled.Parboiled;
 import org.parboiled.parserunners.ReportingParseRunner;
+import org.parboiled.support.ParseTreeUtils;
 import org.parboiled.support.ParsingResult;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -29,7 +30,7 @@ public class ParboiledTest
 
         assertThat(out.parseErrors).isEmpty();
         assertThat(out.matched).isTrue();
-//        System.out.println(ParseTreeUtils.printNodeTree(out));
+        System.out.println(ParseTreeUtils.printNodeTree(out));
     }
 
     @Test
@@ -40,7 +41,6 @@ public class ParboiledTest
 
         assertThat(out.parseErrors).isEmpty();
         assertThat(out.matched).isTrue();
-//        System.out.println(ParseTreeUtils.printNodeTree(out));
+        System.out.println(ParseTreeUtils.printNodeTree(out));
     }
-
 }
