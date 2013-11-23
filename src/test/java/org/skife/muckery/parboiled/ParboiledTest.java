@@ -12,10 +12,10 @@ public class ParboiledTest
     @Test
     public void testPredicate() throws Exception
     {
-PredicateParser p = Parboiled.createParser(PredicateParser.class);
-ParsingResult<Object> out = new ReportingParseRunner<>(
-    p.Predicate()).run("event.sleepState == 'tired' " +
-                       "&& ian != 'wombat squirrel 7'");
+        PredicateParser p = Parboiled.createParser(PredicateParser.class);
+        ParsingResult<Object> out = new ReportingParseRunner<>(
+            p.Predicate()).run("event.sleepState == 'tired' " +
+                               "&& ian != 'wombat squirrel 7'");
 
         assertThat(out.parseErrors).isEmpty();
         assertThat(out.matched).isTrue();
