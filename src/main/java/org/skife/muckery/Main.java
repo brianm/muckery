@@ -2,19 +2,20 @@ package org.skife.muckery;
 
 import io.airlift.command.Cli;
 import io.airlift.command.Help;
+import org.skife.muckery.jmh.JmhCommand;
 
 import java.util.concurrent.Callable;
 
 public class Main
 {
-public static void main(String[] args) throws Exception
-{
-    Cli.<Callable>builder("muckery")
-       .withCommands(Help.class, JLine2Play.class)
-       .withDefaultCommand(Help.class)
-       .build()
-       .parse(args)
-       .call();
+    public static void main(String[] args) throws Exception
+    {
+        Cli.<Callable>builder("muckery")
+           .withCommands(Help.class, JmhCommand.class, JLine2Play.class)
+           .withDefaultCommand(Help.class)
+           .build()
+           .parse(args)
+           .call();
 
-}
+    }
 }
