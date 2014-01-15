@@ -13,20 +13,28 @@ import java.lang.reflect.Method;
 public class ContentionBenchmark
 {
     private static final Foo foo = new Foo();
-    private MethodHandle mh;
+    private MethodHandle mh_virt;
     private Method method;
+    private MethodHandle mh_unref;
 
     @Setup
     public void init() throws NoSuchMethodException, IllegalAccessException
     {
         method = Foo.class.getMethod("stuff");
-        mh = MethodHandles.lookup().findVirtual(Foo.class, "stuff", MethodType.methodType(void.class)).bindTo(foo);
+        mh_virt = MethodHandles.lookup().findVirtual(Foo.class, "stuff", MethodType.methodType(void.class)).bindTo(foo);
+        mh_unref = MethodHandles.lookup().unreflect(Foo.class.getMethod("stuff")).bindTo(foo);
     }
 
     @GenerateMicroBenchmark
-    public void methodHandle() throws Throwable
+    public void virtMethodHandle() throws Throwable
     {
-        mh.invokeExact();
+        mh_virt.invokeExact();
+    }
+
+    @GenerateMicroBenchmark
+    public void unrefMethodHandle() throws Throwable
+    {
+        mh_virt.invokeExact();
     }
 
     @GenerateMicroBenchmark
