@@ -21,26 +21,21 @@ public class ContentionBenchmark
     {
         method = Foo.class.getMethod("stuff");
         mh = MethodHandles.lookup().findVirtual(Foo.class, "stuff", MethodType.methodType(void.class)).bindTo(foo);
-//        mh = MethodHandles.lookup().unreflect(method).bindTo(foo).asFixedArity();
     }
 
     @GenerateMicroBenchmark
-//    @OutputTimeUnit(TimeUnit.SECONDS)
-//    @Warmup(iterations = 5, time = 100, timeUnit = TimeUnit.MILLISECONDS)
-//    @Measurement(iterations = 5, time = 100, timeUnit = TimeUnit.MILLISECONDS)
-//    @Fork(1)
     public void methodHandle() throws Throwable
     {
         mh.invokeExact();
     }
 
-//    @GenerateMicroBenchmark
+    @GenerateMicroBenchmark
     public void invokeDirect() throws Throwable
     {
         foo.stuff();
     }
 
-//    @GenerateMicroBenchmark
+    @GenerateMicroBenchmark
     public void reflect() throws Throwable
     {
         method.invoke(foo);
