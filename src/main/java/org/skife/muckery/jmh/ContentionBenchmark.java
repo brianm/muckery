@@ -34,7 +34,7 @@ public class ContentionBenchmark
     @GenerateMicroBenchmark
     public void unrefMethodHandle() throws Throwable
     {
-        mh_virt.invokeExact();
+        mh_unref.invokeExact();
     }
 
     @GenerateMicroBenchmark
