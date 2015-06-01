@@ -17,11 +17,8 @@
     </parent>
 
     <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.build.targetJdk>1.8</project.build.targetJdk>
-
         <basepom.check.fail-license>false</basepom.check.fail-license>
-
         <main.class>org.skife.muckery.Main</main.class>
     </properties>
 
