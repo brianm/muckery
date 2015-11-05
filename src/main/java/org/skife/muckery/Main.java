@@ -17,7 +17,6 @@ public class Main implements Callable<Void>
            .build()
            .parse(args)
            .call();
-
     }
 
     @Override

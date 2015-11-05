@@ -1,0 +1,18 @@
+syntax = "proto3";
+package hello;
+
+option java_multiple_files = true;
+option java_package = "org.skife.muckery.grpc.hello";
+option java_outer_classname = "HelloProto";
+
+service Hello {
+    rpc Greet(Person) returns (Greeting) {}
+}
+
+message Person {
+    string name = 1;
+}
+
+message Greeting {
+    string message = 1;
+}
