@@ -1,114 +1,51 @@
 package org.skife.muckery.grpc;
 
-import io.grpc.ChannelImpl;
-import io.grpc.ServerImpl;
-import io.grpc.netty.NegotiationType;
-import io.grpc.netty.NettyChannelBuilder;
-import io.grpc.netty.NettyServerBuilder;
+import io.grpc.*;
 import io.grpc.stub.StreamObserver;
 import org.junit.Test;
 import org.skife.muckery.grpc.hello.Greeting;
-import org.skife.muckery.grpc.hello.HelloGrpc;
+import org.skife.muckery.grpc.hello.HelloServiceGrpc;
 import org.skife.muckery.grpc.hello.Person;
-
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class GrpcTest
-{
+public class GrpcTest {
+
     @Test
-    public void testFoo() throws Exception
-    {
+    public void testBrian() throws Exception {
+        int port = 4321;
+        Server server = ServerBuilder.forPort(port)
+                                     .addService(HelloServiceGrpc.bindService(new HelloService()))
+                                     .build()
+                                     .start();
 
-        ServerImpl server = NettyServerBuilder.forPort(7654)
-                                              .addService(HelloGrpc.bindService(new HelloService()))
-                                              .build()
-                                              .start();
+        ManagedChannel channel = ManagedChannelBuilder.forAddress("127.0.0.1", port)
+                                                      .usePlaintext(true)
+                                                      .build();
+        HelloServiceGrpc.HelloServiceBlockingStub stub = HelloServiceGrpc.newBlockingStub(channel);
 
-        ChannelImpl channel = NettyChannelBuilder.forAddress("127.0.0.1", 7654)
-                                                 .negotiationType(NegotiationType.PLAINTEXT)
-                                                 .build();
+        try {
+            Greeting greeting = stub.greet(Person.newBuilder()
+                                                 .setName("Brian")
+                                                 .build());
 
-        HelloGrpc.HelloStub stub = HelloGrpc.newStub(channel);
-
-        final AtomicReference<String> result = new AtomicReference<>();
-        final CountDownLatch latch = new CountDownLatch(1);
-        stub.greet(Person.newBuilder().setName("Brian").build(), new StreamObserver<Greeting>()
-        {
-            @Override
-            public void onValue(final Greeting greeting)
-            {
-                result.set(greeting.getMessage());
-            }
-
-            @Override
-            public void onError(final Throwable throwable)
-            {
-
-            }
-
-            @Override
-            public void onCompleted()
-            {
-                latch.countDown();
-            }
-        });
-        latch.await();
-        assertThat(result.get()).isEqualTo("Hello, Brian");
-
-
-        final CountDownLatch boomlatch = new CountDownLatch(1);
-        final AtomicReference<Throwable> bang = new AtomicReference<>();
-        stub.greet(Person.newBuilder().setName("Fred").build(), new StreamObserver<Greeting>()
-        {
-            @Override
-            public void onValue(final Greeting greeting)
-            {
-
-            }
-
-            @Override
-            public void onError(final Throwable throwable)
-            {
-                bang.set(throwable);
-                boomlatch.countDown();
-            }
-
-            @Override
-            public void onCompleted()
-            {
-
-            }
-        });
-        boomlatch.await();
-        System.out.println(bang.get().getMessage());
-
-
-        HelloGrpc.HelloBlockingStub bstub = HelloGrpc.newBlockingStub(channel);
-        Greeting rs = bstub.greet(Person.newBuilder().setName("Greg").build());
-        assertThat(rs.getMessage()).isEqualTo("Hello, Greg");
-
-        server.shutdown();
-
-        server.awaitTermination(30, TimeUnit.MINUTES);
-
+            assertThat(greeting.getMessage()).isEqualTo("Hello, Brian");
+        } finally {
+            server.shutdown();
+            channel.shutdown();
+        }
     }
 
-    public static class HelloService implements HelloGrpc.Hello
-    {
+    public static class HelloService implements HelloServiceGrpc.HelloService {
 
         @Override
-        public void greet(final Person request, final StreamObserver<Greeting> responseObserver)
-        {
+        public void greet(final Person request, final StreamObserver<Greeting> responseObserver) {
             String name = request.getName();
             if ("Fred".equals(name)) {
                 responseObserver.onError(new IllegalArgumentException("No Freds Allowed"));
             }
             else {
-                responseObserver.onValue(Greeting.newBuilder().setMessage("Hello, " + name).build());
+                responseObserver.onNext(Greeting.newBuilder().setMessage("Hello, " + name).build());
                 responseObserver.onCompleted();
             }
         }

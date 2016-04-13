@@ -21,6 +21,9 @@
         <basepom.check.fail-license>false</basepom.check.fail-license>
         <main.class>org.skife.muckery.Main</main.class>
 
+        <dep.grpc.version>0.13.2</dep.grpc.version>
+        <dep.protoc.version>3.0.0-beta-2</dep.protoc.version>
+
         <version.akka>2.4.0</version.akka>
     </properties>
 
@@ -29,8 +32,17 @@
         <dependency>
             <groupId>io.grpc</groupId>
             <artifactId>grpc-all</artifactId>
-            <version>0.8.0</version>
+            <version>${dep.grpc.version}</version>
         </dependency>
+
+        <!--
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-tcnative-boringssl-static</artifactId>
+            <version>1.1.33.Fork14</version>
+            <classifier>${os.detected.classifier}</classifier>
+        </dependency>
+        -->
 
         <dependency>
             <groupId>com.google.guava</groupId>
@@ -90,6 +102,12 @@
             <version>3.0.0</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.pcollections</groupId>
+            <artifactId>pcollections</artifactId>
+            <version>2.1.2</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
@@ -97,23 +115,24 @@
             <extension>
                 <groupId>kr.motd.maven</groupId>
                 <artifactId>os-maven-plugin</artifactId>
-                <version>1.2.3.Final</version>
+                <version>1.4.1.Final</version>
             </extension>
         </extensions>
+
         <plugins>
             <plugin>
-                <groupId>com.google.protobuf.tools</groupId>
-                <artifactId>maven-protoc-plugin</artifactId>
-                <version>0.4.2</version>
+                <groupId>org.xolstice.maven.plugins</groupId>
+                <artifactId>protobuf-maven-plugin</artifactId>
+                <version>0.5.0</version>
                 <configuration>
                     <!--
                       The version of protoc must match protobuf-java. If you don't depend on
                       protobuf-java directly, you will be transitively depending on the
                       protobuf-java version that grpc depends on.
                     -->
-                    <protocArtifact>com.google.protobuf:protoc:3.0.0-alpha-3.1:exe:${os.detected.classifier}</protocArtifact>
+                    <protocArtifact>com.google.protobuf:protoc:${dep.protoc.version}:exe:${os.detected.classifier}</protocArtifact>
                     <pluginId>grpc-java</pluginId>
-                    <pluginArtifact>io.grpc:protoc-gen-grpc-java:0.8.0:exe:${os.detected.classifier}</pluginArtifact>
+                    <pluginArtifact>io.grpc:protoc-gen-grpc-java:${dep.grpc.version}:exe:${os.detected.classifier}</pluginArtifact>
                 </configuration>
                 <executions>
                     <execution>
@@ -124,6 +143,7 @@
                     </execution>
                 </executions>
             </plugin>
+
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
@@ -162,21 +182,4 @@
             </plugin>
         </plugins>
     </build>
-    <pluginRepositories>
-        <pluginRepository>
-            <releases>
-                <updatePolicy>never</updatePolicy>
-            </releases>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-            <id>central</id>
-            <name>Central Repository</name>
-            <url>https://repo.maven.apache.org/maven2</url>
-        </pluginRepository>
-        <pluginRepository>
-            <id>protoc-plugin</id>
-            <url>https://dl.bintray.com/sergei-ivanov/maven/</url>
-        </pluginRepository>
-    </pluginRepositories>
 </project>
