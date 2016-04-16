@@ -35,14 +35,14 @@
             <version>${dep.grpc.version}</version>
         </dependency>
 
-        <!--
+
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-tcnative-boringssl-static</artifactId>
             <version>1.1.33.Fork14</version>
             <classifier>${os.detected.classifier}</classifier>
         </dependency>
-        -->
+
 
         <dependency>
             <groupId>com.google.guava</groupId>
@@ -106,6 +106,12 @@
             <groupId>org.pcollections</groupId>
             <artifactId>pcollections</artifactId>
             <version>2.1.2</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.zeromq</groupId>
+            <artifactId>jeromq</artifactId>
+            <version>0.3.5</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

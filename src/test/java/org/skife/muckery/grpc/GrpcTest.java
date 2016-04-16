@@ -1,5 +1,6 @@
 package org.skife.muckery.grpc;
 
+import com.google.common.util.concurrent.ListenableFuture;
 import io.grpc.*;
 import io.grpc.stub.StreamObserver;
 import org.junit.Test;
@@ -12,7 +13,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class GrpcTest {
 
     @Test
-    public void testBrian() throws Exception {
+    public void testBlocking() throws Exception {
         int port = 4321;
         Server server = ServerBuilder.forPort(port)
                                      .addService(HelloServiceGrpc.bindService(new HelloService()))
@@ -30,6 +31,31 @@ public class GrpcTest {
                                                  .build());
 
             assertThat(greeting.getMessage()).isEqualTo("Hello, Brian");
+        } finally {
+            server.shutdown();
+            channel.shutdown();
+        }
+    }
+
+    @Test
+    public void testNonBlocking() throws Exception {
+        int port = 4322;
+        Server server = ServerBuilder.forPort(port)
+                                     .addService(HelloServiceGrpc.bindService(new HelloService()))
+                                     .build()
+                                     .start();
+
+        ManagedChannel channel = ManagedChannelBuilder.forAddress("127.0.0.1", port)
+                                                      .usePlaintext(true)
+                                                      .build();
+        HelloServiceGrpc.HelloServiceFutureStub stub = HelloServiceGrpc.newFutureStub(channel);
+
+        try {
+            ListenableFuture<Greeting> greeting = stub.greet(Person.newBuilder()
+                                                                   .setName("Brian")
+                                                                   .build());
+
+            assertThat(greeting.get().getMessage()).isEqualTo("Hello, Brian");
         } finally {
             server.shutdown();
             channel.shutdown();
