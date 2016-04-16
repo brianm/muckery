@@ -8,6 +8,7 @@ package hello;
 
 service HelloService {
     rpc Greet(Person) returns (Greeting) {}
+    rpc GreetEveryone(stream Person) returns (Greeting) {}
 }
 
 message Person {
