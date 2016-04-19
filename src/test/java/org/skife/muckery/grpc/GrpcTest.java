@@ -5,9 +5,7 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.ListenableFuture;
 import io.grpc.ManagedChannel;
-import io.grpc.ManagedChannelBuilder;
 import io.grpc.Server;
-import io.grpc.ServerBuilder;
 import io.grpc.inprocess.InProcessChannelBuilder;
 import io.grpc.inprocess.InProcessServerBuilder;
 import io.grpc.stub.StreamObserver;
@@ -21,7 +19,6 @@ import org.skife.muckery.grpc.hello.Person;
 
 import java.util.List;
 import java.util.Set;
-import java.util.StringJoiner;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
@@ -38,12 +35,14 @@ public class GrpcTest {
         int port = NetUtil.findUnusedPort();
 
         server = InProcessServerBuilder.forPort(port)
+                                       .directExecutor()
                                        .addService(HelloServiceGrpc.bindService(new HelloService()))
                                        .build()
                                        .start();
 
 
         channel = InProcessChannelBuilder.forAddress("127.0.0.1", port)
+                                         .directExecutor()
                                          .usePlaintext(true)
                                          .build();
     }

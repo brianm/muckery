@@ -1,9 +1,8 @@
 package org.skife.muckery.eventsource;
 
-import com.google.common.base.Objects;
-import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
+import org.immutables.value.Value;
 import org.junit.Test;
 
 import java.util.SortedSet;
@@ -16,7 +15,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class EventSourceTest {
 
     @Test
-    public void testEventInterop() throws Exception {
+    public void testEventProtocolMuckery() throws Exception {
         EventBus bus = new EventBus();
 
         UserInterface ui = new UserInterface(bus);
@@ -25,39 +24,13 @@ public class EventSourceTest {
         bus.register(ui);
         bus.register(catalog);
 
-        ui.addProduct(new Product("/a"));
-        ui.addProduct(new Product("/b"));
-        ui.addProduct(new Product("/c"));
+        ui.addProduct(ImmutableProduct.builder().id("/a").build());
+        ui.addProduct(ImmutableProduct.builder().id("/b").build());
+        ui.addProduct(ImmutableProduct.builder().id("/c").build());
 
-        CompletableFuture<SortedSet<Product>> products = ui.listItems();
+        CompletableFuture<SortedSet<Product>> products = ui.listProducts();
         SortedSet<Product> ps = products.get();
         assertThat(ps).hasSize(3);
-    }
-
-    static class Product implements Comparable<Product> {
-        private String id;
-
-        Product(String id) {
-            this.id = id;
-        }
-
-        @Override
-        public int compareTo(Product o) {
-            return this.id.compareTo(o.id);
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-            Product product = (Product) o;
-            return Objects.equal(id, product.id);
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hashCode(id);
-        }
     }
 
     private static class Catalog {
@@ -70,13 +43,17 @@ public class EventSourceTest {
         }
 
         @Subscribe
-        public void listProducts(Events.ListProductsRequest req) {
-            bus.post(new Events.ListProductResponse(req.queryId, ImmutableSortedSet.copyOf(products)));
+        public void listProducts(ListProductsRequest req) {
+
+            bus.post(ListProductResponse.builder()
+                                        .queryId(req.queryId())
+                                        .products(products)
+                                        .build());
         }
 
         @Subscribe
-        public void addProduct(Events.AddProduct req) {
-            this.products.add(req.getProduct());
+        public void addProduct(AddProduct req) {
+            this.products.add(req.product());
         }
     }
 
@@ -89,71 +66,64 @@ public class EventSourceTest {
 
 
         void addProduct(Product p) {
-            bus.post(new Events.AddProduct(p));
+            bus.post(AddProduct.builder()
+                               .product(p)
+                               .build());
         }
 
-        CompletableFuture<SortedSet<Product>> listItems() {
+        CompletableFuture<SortedSet<Product>> listProducts() {
             final UUID id = UUID.randomUUID();
             CompletableFuture<SortedSet<Product>> result = new CompletableFuture<>();
 
             bus.register(new Object() {
 
                 @Subscribe()
-                public void receive(Events.ListProductResponse r) {
-                    if (id.equals(r.getQueryId())) {
+                public void receive(ListProductResponse r) {
+                    if (id.equals(r.queryId())) {
                         bus.unregister(this);
-                        result.complete(r.getProducts());
+                        result.complete(r.products());
                     }
                 }
             });
 
-            bus.post(new Events.ListProductsRequest(id));
+            bus.post(ListProductsRequest.builder()
+                                        .queryId(id)
+                                        .build());
 
             return result;
         }
     }
 
-    private interface Events {
 
-        class ListProductsRequest {
-            private UUID queryId;
+    @Value.Immutable
+    interface Product extends Comparable<Product> {
+        String id();
 
-            ListProductsRequest(UUID queryId) {
-                this.queryId = queryId;
-            }
+        @Override
+        default int compareTo(Product o) {
+            return this.id().compareTo(o.id());
         }
+    }
 
-        class ListProductResponse {
-            private final UUID queryId;
-            private final SortedSet<Product> products;
+    @Value.Immutable
+    @Event
+    interface _ListProductsRequest {
+        UUID queryId();
+    }
 
-            ListProductResponse(UUID queryId,
-                                SortedSet<Product> products) {
-                this.queryId = queryId;
-                this.products = products;
-            }
+    @Value.Immutable
+    @Event
+    interface _ListProductResponse {
+        UUID queryId();
 
-            UUID getQueryId() {
-                return queryId;
-            }
+        @Value.NaturalOrder
+        SortedSet<Product> products();
 
-            SortedSet<Product> getProducts() {
-                return products;
-            }
-        }
+    }
 
-        class AddProduct {
-
-            private Product product;
-
-            AddProduct(Product product) {
-
-                this.product = product;
-            }
-
-            Product getProduct() {
-                return product;
-            }
-        }
+    @Value.Immutable
+    @Event
+    interface _AddProduct {
+        Product product();
     }
 }
