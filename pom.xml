@@ -35,7 +35,6 @@
             <version>${dep.grpc.version}</version>
         </dependency>
 
-
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-tcnative-boringssl-static</artifactId>
@@ -43,11 +42,28 @@
             <classifier>${os.detected.classifier}</classifier>
         </dependency>
 
-
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
             <version>18.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>2.7.4</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+            <version>2.7.4</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+            <version>2.7.4</version>
         </dependency>
 
         <dependency>
@@ -121,6 +137,27 @@
             <version>0.3.5</version>
             <scope>test</scope>
         </dependency>
+
+        <dependency>
+            <groupId>org.jdbi</groupId>
+            <artifactId>jdbi</artifactId>
+            <version>2.73</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <version>1.4.191</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.hubspot.rosetta</groupId>
+            <artifactId>RosettaJdbi</artifactId>
+            <version>3.10.10</version>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 
     <build>

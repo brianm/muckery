@@ -16,10 +16,11 @@ public class EventSourceTest {
 
     @Test
     public void testEventProtocolMuckery() throws Exception {
-        EventBus bus = new EventBus();
+        final EventBus bus = new EventBus();
 
-        UserInterface ui = new UserInterface(bus);
-        Catalog catalog = new Catalog(bus);
+        final UserInterface ui = new UserInterface(bus);
+
+        final Catalog catalog = new Catalog(bus);
 
         bus.register(ui);
         bus.register(catalog);
@@ -28,67 +29,67 @@ public class EventSourceTest {
         ui.addProduct(ImmutableProduct.builder().id("/b").build());
         ui.addProduct(ImmutableProduct.builder().id("/c").build());
 
-        CompletableFuture<SortedSet<Product>> products = ui.listProducts();
-        SortedSet<Product> ps = products.get();
+        final CompletableFuture<SortedSet<Product>> products = ui.listProducts();
+        final SortedSet<Product> ps = products.get();
         assertThat(ps).hasSize(3);
     }
 
     private static class Catalog {
 
-        private EventBus bus;
-        private SortedSet<Product> products = new ConcurrentSkipListSet<>();
+        private final EventBus bus;
+        private final SortedSet<Product> products = new ConcurrentSkipListSet<>();
 
-        Catalog(EventBus bus) {
+        Catalog(final EventBus bus) {
             this.bus = bus;
         }
 
         @Subscribe
-        public void listProducts(ListProductsRequest req) {
+        public void listProducts(final ListProductsRequest req) {
 
-            bus.post(ListProductResponse.builder()
-                                        .queryId(req.queryId())
-                                        .products(products)
-                                        .build());
+            this.bus.post(ListProductResponse.builder()
+                                             .queryId(req.queryId())
+                                             .products(this.products)
+                                             .build());
         }
 
         @Subscribe
-        public void addProduct(AddProduct req) {
+        public void addProduct(final AddProduct req) {
             this.products.add(req.product());
         }
     }
 
     private static class UserInterface {
-        private EventBus bus;
+        private final EventBus bus;
 
-        UserInterface(EventBus bus) {
+        UserInterface(final EventBus bus) {
             this.bus = bus;
         }
 
 
-        void addProduct(Product p) {
-            bus.post(AddProduct.builder()
-                               .product(p)
-                               .build());
+        void addProduct(final Product p) {
+            this.bus.post(AddProduct.builder()
+                                    .product(p)
+                                    .build());
         }
 
         CompletableFuture<SortedSet<Product>> listProducts() {
             final UUID id = UUID.randomUUID();
-            CompletableFuture<SortedSet<Product>> result = new CompletableFuture<>();
+            final CompletableFuture<SortedSet<Product>> result = new CompletableFuture<>();
 
-            bus.register(new Object() {
+            this.bus.register(new Object() {
 
                 @Subscribe()
-                public void receive(ListProductResponse r) {
+                public void receive(final ListProductResponse r) {
                     if (id.equals(r.queryId())) {
-                        bus.unregister(this);
+                        UserInterface.this.bus.unregister(this);
                         result.complete(r.products());
                     }
                 }
             });
 
-            bus.post(ListProductsRequest.builder()
-                                        .queryId(id)
-                                        .build());
+            this.bus.post(ListProductsRequest.builder()
+                                             .queryId(id)
+                                             .build());
 
             return result;
         }
@@ -100,7 +101,7 @@ public class EventSourceTest {
         String id();
 
         @Override
-        default int compareTo(Product o) {
+        default int compareTo(final Product o) {
             return this.id().compareTo(o.id());
         }
     }
