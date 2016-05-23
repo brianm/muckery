@@ -23,7 +23,8 @@ public class RosettaTest {
         final DBI dbi = new DBI(this.h2);
         dbi.registerMapper(new RosettaMapperFactory());
         dbi.registerContainerFactory(new OptionalContainerFactory());
-        new RosettaObjectMapperOverride(new ObjectMapper().configure(MapperFeature.ACCEPT_CASE_INSENSITIVE_PROPERTIES, true)).override(dbi);
+        new RosettaObjectMapperOverride(new ObjectMapper().enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_PROPERTIES))
+                .override(dbi);
 
         final Dao dao = dbi.onDemand(Dao.class);
         dao.migrate();
