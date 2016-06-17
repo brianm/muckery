@@ -1,5 +1,6 @@
 package org.skife.muckery.jdbi;
 
+import com.google.api.client.util.Maps;
 import org.assertj.core.data.MapEntry;
 import org.junit.Rule;
 import org.junit.Test;
@@ -9,6 +10,7 @@ import org.skife.jdbi.v2.sqlobject.Bind;
 import org.skife.jdbi.v2.sqlobject.SqlQuery;
 import org.skife.jdbi.v2.sqlobject.SqlUpdate;
 import org.skife.jdbi.v2.sqlobject.customizers.RegisterMapper;
+import org.skife.jdbi.v2.sqlobject.mixins.GetHandle;
 import org.skife.jdbi.v2.tweak.ResultSetMapper;
 
 import java.sql.ResultSet;
@@ -39,9 +41,13 @@ public class MapStringStringTest {
         assertThat(values).contains(MapEntry.entry("hello", "world"))
                           .contains(MapEntry.entry("bonjour", "monde"));
 
+        final Map<String, String> fluentValues = dao.findAllFluent();
+        assertThat(fluentValues).contains(MapEntry.entry("hello", "world"))
+                                .contains(MapEntry.entry("bonjour", "monde"));
+
     }
 
-    public static abstract class Dao {
+    public static abstract class Dao implements GetHandle {
 
         @SqlUpdate("create table kv ( key varchar primary key, value varchar)")
         abstract void createKvTable();
@@ -57,13 +63,22 @@ public class MapStringStringTest {
             return findKvPairs().stream()
                                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
         }
+
+        public Map<String, String> findAllFluent() {
+            return getHandle().createQuery("select key, value from kv order by key")
+                              .fold(Maps.<String, String>newLinkedHashMap(), (a, rs, ctx) -> {
+                                  a.put(rs.getString("key"), rs.getString("value"));
+                                  return a;
+                              });
+        }
     }
 
     public static class StringStringMapEntryMapper implements ResultSetMapper<Map.Entry<String, String>> {
 
-
         @Override
-        public Map.Entry<String, String> map(final int index, final ResultSet r, final StatementContext ctx) throws SQLException {
+        public Map.Entry<String, String> map(final int index,
+                                             final ResultSet r,
+                                             final StatementContext ctx) throws SQLException {
             return new AbstractMap.SimpleEntry<String, String>(r.getString("key"), r.getString("value"));
         }
     }
