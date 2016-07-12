@@ -1,6 +1,6 @@
 package org.skife.muckery.jdbi;
 
-import com.google.api.client.util.Maps;
+import com.google.common.collect.Maps;
 import org.assertj.core.data.MapEntry;
 import org.junit.Rule;
 import org.junit.Test;
