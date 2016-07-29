@@ -28,10 +28,19 @@
     </properties>
 
     <dependencies>
-
         <dependency>
             <groupId>io.grpc</groupId>
-            <artifactId>grpc-all</artifactId>
+            <artifactId>grpc-netty</artifactId>
+            <version>${dep.grpc.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.grpc</groupId>
+            <artifactId>grpc-protobuf</artifactId>
+            <version>${dep.grpc.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.grpc</groupId>
+            <artifactId>grpc-stub</artifactId>
             <version>${dep.grpc.version}</version>
         </dependency>
 
