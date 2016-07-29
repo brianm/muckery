@@ -11,7 +11,9 @@ import io.grpc.ServerBuilder;
 import io.grpc.stub.StreamObserver;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.skife.muckery.ExecutorServiceRule;
 import org.skife.muckery.NetUtil;
 import org.skife.muckery.grpc.hello.Greeting;
 import org.skife.muckery.grpc.hello.HelloServiceGrpc;
@@ -28,34 +30,25 @@ import static org.assertj.core.api.Assertions.fail;
 
 public class GrpcTest {
 
+    @Rule
+    public ExecutorServiceRule exec = new ExecutorServiceRule();
+
     private ManagedChannel channel;
     private Server server;
 
     @Before
     public void setUp() throws Exception {
+
         final int port = NetUtil.findUnusedPort();
-
-        /*
-        this.server = InProcessServerBuilder.forPort(port)
-                                            .directExecutor()
-                                            .addService(HelloServiceGrpc.bindService(new HelloService()))
-                                            .build()
-                                            .start();
-
-
-        this.channel = InProcessChannelBuilder.forAddress("127.0.0.1", port)
-                                              .directExecutor()
-                                              .usePlaintext(true)
-                                              .build();
-                                              */
         this.server = ServerBuilder.forPort(port)
-                                   .directExecutor()
+                                   .executor(this.exec)
                                    .addService(HelloServiceGrpc.bindService(new HelloService()))
                                    .build()
                                    .start();
 
 
         this.channel = ManagedChannelBuilder.forAddress("127.0.0.1", port)
+                                            .executor(this.exec)
                                             .directExecutor()
                                             .usePlaintext(true)
                                             .build();
