@@ -14,7 +14,6 @@ import org.skife.jdbi.v2.Handle;
 import org.skife.muckery.jdbi.H2Rule;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -38,22 +37,13 @@ public class ImmutableMappingTest {
         try (Handle h = this.dbi.open()) {
             h.execute("insert into something (id, name) values (1, 'Brian'), (2, 'Derrick'), (3, 'Francisco')");
 
-            final List<? extends Something> rs = h.createQuery("select id, name from something order by id")
-                                                  .map((i, r, c) -> Something.builder()
-                                                                             .id(r.getInt("id"))
-                                                                             .name(r.getString("name"))
-                                                                             .build())
-                                                  .list();
+            final List<Something> rs = h.createQuery("select id, name from something order by id")
+                                        .map((_i, r, _c) -> Something.create(r.getInt("id"), r.getString("name")))
+                                        .list();
 
-            assertThat(rs.stream()
-                         .map(Something::name)
-                         .collect(Collectors.toList()))
-                    .containsExactly("Brian", "Derrick", "Francisco");
-
-            assertThat(rs.stream()
-                         .map(Something::id)
-                         .collect(Collectors.toList()))
-                    .containsExactly(1, 2, 3);
+            assertThat(rs).containsExactly(Something.create(1, "Brian"),
+                                           Something.create(2, "Derrick"),
+                                           Something.create(3, "Francisco"));
         }
     }
 
@@ -77,7 +67,7 @@ public class ImmutableMappingTest {
     @Test
     public void testJacksonStuff() throws Exception {
         final ObjectMapper mapper = new ObjectMapper();
-        final Something s = mapper.readValue("{\"name\":\"Tatu\",\"id\":\"42\"}", Something.class);
+        mapper.readValue("{\"name\":\"Tatu\",\"id\":\"42\"}", Something.class);
     }
 
     @Value.Immutable
