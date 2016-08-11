@@ -87,6 +87,12 @@
             <version>3.2.0</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>me.shakiba.jdbi</groupId>
+            <artifactId>jdbi-annotation</artifactId>
+            <version>0.1.1</version>
+            <scope>test</scope>
+        </dependency>
 
         <dependency>
             <groupId>com.squareup.okhttp3</groupId>
@@ -98,7 +104,7 @@
         <dependency>
             <groupId>org.immutables</groupId>
             <artifactId>value</artifactId>
-            <version>2.1.16</version>
+            <version>2.2.10</version>
             <scope>provided</scope>
         </dependency>
 
@@ -151,7 +157,7 @@
         <dependency>
             <groupId>org.assertj</groupId>
             <artifactId>assertj-core</artifactId>
-            <version>3.0.0</version>
+            <version>3.5.2</version>
             <scope>test</scope>
         </dependency>
         <dependency>
