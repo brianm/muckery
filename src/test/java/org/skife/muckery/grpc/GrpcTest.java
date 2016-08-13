@@ -5,9 +5,9 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.ListenableFuture;
 import io.grpc.ManagedChannel;
-import io.grpc.ManagedChannelBuilder;
 import io.grpc.Server;
-import io.grpc.ServerBuilder;
+import io.grpc.netty.NettyChannelBuilder;
+import io.grpc.netty.NettyServerBuilder;
 import io.grpc.stub.StreamObserver;
 import org.junit.After;
 import org.junit.Before;
@@ -15,9 +15,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.skife.muckery.ExecutorServiceRule;
 import org.skife.muckery.NetUtil;
-import org.skife.muckery.grpc.hello.Greeting;
+import org.skife.muckery.grpc.hello.Hello;
 import org.skife.muckery.grpc.hello.HelloServiceGrpc;
-import org.skife.muckery.grpc.hello.Person;
 
 import java.util.List;
 import java.util.Set;
@@ -40,18 +39,18 @@ public class GrpcTest {
     public void setUp() throws Exception {
 
         final int port = NetUtil.findUnusedPort();
-        this.server = ServerBuilder.forPort(port)
-                                   .executor(this.exec)
-                                   .addService(HelloServiceGrpc.bindService(new HelloService()))
-                                   .build()
-                                   .start();
+        this.server = NettyServerBuilder.forPort(port)
+                                        .executor(this.exec)
+                                        .addService(new HelloService())
+                                        .build()
+                                        .start();
 
 
-        this.channel = ManagedChannelBuilder.forAddress("127.0.0.1", port)
-                                            .executor(this.exec)
-                                            .directExecutor()
-                                            .usePlaintext(true)
-                                            .build();
+        this.channel = NettyChannelBuilder.forAddress("127.0.0.1", port)
+                                          .executor(this.exec)
+                                          .directExecutor()
+                                          .usePlaintext(true)
+                                          .build();
     }
 
     @After
@@ -64,9 +63,9 @@ public class GrpcTest {
     public void testBlockingStub() throws Exception {
 
         final HelloServiceGrpc.HelloServiceBlockingStub stub = HelloServiceGrpc.newBlockingStub(this.channel);
-        final Greeting greeting = stub.greet(Person.newBuilder()
-                                                   .setName("Brian")
-                                                   .build());
+        final Hello.Greeting greeting = stub.greet(Hello.Person.newBuilder()
+                                                               .setName("Brian")
+                                                               .build());
 
         assertThat(greeting.getMessage()).isEqualTo("Hello, Brian");
 
@@ -77,9 +76,9 @@ public class GrpcTest {
         final HelloServiceGrpc.HelloServiceFutureStub stub = HelloServiceGrpc.newFutureStub(this.channel);
 
 
-        final ListenableFuture<Greeting> greeting = stub.greet(Person.newBuilder()
-                                                                     .setName("Brian")
-                                                                     .build());
+        final ListenableFuture<Hello.Greeting> greeting = stub.greet(Hello.Person.newBuilder()
+                                                                                 .setName("Brian")
+                                                                                 .build());
 
         assertThat(greeting.get().getMessage()).isEqualTo("Hello, Brian");
 
@@ -92,9 +91,9 @@ public class GrpcTest {
         final Set<String> flags = Sets.newConcurrentHashSet();
         final CountDownLatch latch = new CountDownLatch(1);
         final AtomicReference<String> msg = new AtomicReference<>();
-        final StreamObserver<Person> obs = stub.greetEveryone(new StreamObserver<Greeting>() {
+        final StreamObserver<Hello.Person> obs = stub.greetEveryone(new StreamObserver<Hello.Greeting>() {
             @Override
-            public void onNext(final Greeting greeting) {
+            public void onNext(final Hello.Greeting greeting) {
                 msg.set(greeting.getMessage());
                 flags.add("response");
             }
@@ -110,8 +109,8 @@ public class GrpcTest {
                 latch.countDown();
             }
         });
-        obs.onNext(Person.newBuilder().setName("Joy").build());
-        obs.onNext(Person.newBuilder().setName("Brian").build());
+        obs.onNext(Hello.Person.newBuilder().setName("Joy").build());
+        obs.onNext(Hello.Person.newBuilder().setName("Brian").build());
         obs.onCompleted();
 
         latch.await(1, TimeUnit.SECONDS);
@@ -124,9 +123,9 @@ public class GrpcTest {
         final HelloServiceGrpc.HelloServiceStub stub = HelloServiceGrpc.newStub(this.channel);
         final List<String> results = Lists.newArrayList();
         final CountDownLatch latch = new CountDownLatch(1);
-        final StreamObserver<Person> caller = stub.greetEveryoneIndividually(new StreamObserver<Greeting>() {
+        final StreamObserver<Hello.Person> caller = stub.greetEveryoneIndividually(new StreamObserver<Hello.Greeting>() {
             @Override
-            public void onNext(final Greeting greeting) {
+            public void onNext(final Hello.Greeting greeting) {
                 results.add(greeting.getMessage());
             }
 
@@ -141,36 +140,36 @@ public class GrpcTest {
             }
         });
 
-        caller.onNext(Person.newBuilder().setName("Brian").build());
-        caller.onNext(Person.newBuilder().setName("Francisco").build());
+        caller.onNext(Hello.Person.newBuilder().setName("Brian").build());
+        caller.onNext(Hello.Person.newBuilder().setName("Francisco").build());
         caller.onCompleted();
         latch.await();
 
         assertThat(results).containsExactly("Hello, Brian!", "Hello, Francisco!");
     }
 
-    private static class HelloService implements HelloServiceGrpc.HelloService {
+    private static class HelloService extends HelloServiceGrpc.HelloServiceImplBase {
 
         @Override
-        public void greet(final Person request, final StreamObserver<Greeting> responseObserver) {
+        public void greet(final Hello.Person request, final StreamObserver<Hello.Greeting> responseObserver) {
             final String name = request.getName();
             if ("Fred".equals(name)) {
                 responseObserver.onError(new IllegalArgumentException("No Freds Allowed"));
             }
             else {
-                responseObserver.onNext(Greeting.newBuilder().setMessage("Hello, " + name).build());
+                responseObserver.onNext(Hello.Greeting.newBuilder().setMessage("Hello, " + name).build());
                 responseObserver.onCompleted();
             }
         }
 
         @Override
-        public StreamObserver<Person> greetEveryone(final StreamObserver<Greeting> ro) {
-            return new StreamObserver<Person>() {
+        public StreamObserver<Hello.Person> greetEveryone(final StreamObserver<Hello.Greeting> ro) {
+            return new StreamObserver<Hello.Person>() {
 
                 private final List<String> names = Lists.newArrayList();
 
                 @Override
-                public void onNext(final Person person) {
+                public void onNext(final Hello.Person person) {
                     this.names.add(person.getName());
                 }
 
@@ -181,22 +180,22 @@ public class GrpcTest {
 
                 @Override
                 public void onCompleted() {
-                    ro.onNext(Greeting.newBuilder()
-                                      .setMessage("Hello, " + Joiner.on(", ").join(this.names) + "!")
-                                      .build());
+                    ro.onNext(Hello.Greeting.newBuilder()
+                                            .setMessage("Hello, " + Joiner.on(", ").join(this.names) + "!")
+                                            .build());
                     ro.onCompleted();
                 }
             };
         }
 
         @Override
-        public StreamObserver<Person> greetEveryoneIndividually(final StreamObserver<Greeting> responseObserver) {
-            return new StreamObserver<Person>() {
+        public StreamObserver<Hello.Person> greetEveryoneIndividually(final StreamObserver<Hello.Greeting> responseObserver) {
+            return new StreamObserver<Hello.Person>() {
                 @Override
-                public void onNext(final Person person) {
-                    responseObserver.onNext(Greeting.newBuilder()
-                                                    .setMessage("Hello, " + person.getName() + "!")
-                                                    .build());
+                public void onNext(final Hello.Person person) {
+                    responseObserver.onNext(Hello.Greeting.newBuilder()
+                                                          .setMessage("Hello, " + person.getName() + "!")
+                                                          .build());
                 }
 
                 @Override

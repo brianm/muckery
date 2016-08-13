@@ -21,8 +21,8 @@
         <basepom.check.fail-license>false</basepom.check.fail-license>
         <main.class>org.skife.muckery.Main</main.class>
 
-        <dep.grpc.version>0.15.0</dep.grpc.version>
-        <dep.protoc.version>3.0.0-beta-3</dep.protoc.version>
+        <dep.grpc.version>1.0.0-pre2</dep.grpc.version>
+        <dep.protoc.version>3.0.0</dep.protoc.version>
 
         <version.akka>2.4.0</version.akka>
     </properties>
