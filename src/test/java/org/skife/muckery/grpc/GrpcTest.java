@@ -5,7 +5,10 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.ListenableFuture;
 import io.grpc.ManagedChannel;
+import io.grpc.Metadata;
 import io.grpc.Server;
+import io.grpc.Status;
+import io.grpc.StatusException;
 import io.grpc.netty.NettyChannelBuilder;
 import io.grpc.netty.NettyServerBuilder;
 import io.grpc.stub.StreamObserver;
@@ -81,7 +84,35 @@ public class GrpcTest {
                                                                                  .build());
 
         assertThat(greeting.get().getMessage()).isEqualTo("Hello, Brian");
+    }
 
+    @Test
+    public void testGreetThatFails() throws Exception {
+        final HelloServiceGrpc.HelloServiceStub stub = HelloServiceGrpc.newStub(this.channel);
+        final Hello.Person person = Hello.Person.newBuilder().setName("Fred").build();
+        final CountDownLatch latch = new CountDownLatch(1);
+        final AtomicReference<Throwable> error = new AtomicReference<>();
+        stub.greet(person, new StreamObserver<Hello.Greeting>() {
+            @Override
+            public void onNext(final Hello.Greeting greeting) {
+                fail("got response!");
+            }
+
+            @Override
+            public void onError(final Throwable throwable) {
+                error.set(throwable);
+                latch.countDown();
+            }
+
+            @Override
+            public void onCompleted() {
+                latch.countDown();
+            }
+        });
+
+        assertThat(latch.await(2, TimeUnit.SECONDS)).isTrue();
+
+        assertThat(error.get()).isNotNull();
     }
 
     @Test
@@ -119,7 +150,7 @@ public class GrpcTest {
     }
 
     @Test
-    public void testBidirectionalStreamin() throws Exception {
+    public void testBidirectionalStreaming() throws Exception {
         final HelloServiceGrpc.HelloServiceStub stub = HelloServiceGrpc.newStub(this.channel);
         final List<String> results = Lists.newArrayList();
         final CountDownLatch latch = new CountDownLatch(1);
@@ -154,7 +185,21 @@ public class GrpcTest {
         public void greet(final Hello.Person request, final StreamObserver<Hello.Greeting> responseObserver) {
             final String name = request.getName();
             if ("Fred".equals(name)) {
-                responseObserver.onError(new IllegalArgumentException("No Freds Allowed"));
+                final Metadata.Key<String> key = Metadata.Key.of("problem", new Metadata.AsciiMarshaller<String>() {
+
+                    @Override
+                    public String toAsciiString(final String s) {
+                        return s;
+                    }
+
+                    @Override
+                    public String parseAsciiString(final String s) {
+                        return s;
+                    }
+                });
+                final Metadata m = new Metadata();
+                m.put(key, "No fred!");
+                responseObserver.onError(new StatusException(Status.INVALID_ARGUMENT, m));
             }
             else {
                 responseObserver.onNext(Hello.Greeting.newBuilder().setMessage("Hello, " + name).build());
