@@ -9,6 +9,7 @@ import io.grpc.Metadata;
 import io.grpc.Server;
 import io.grpc.Status;
 import io.grpc.StatusException;
+import io.grpc.StatusRuntimeException;
 import io.grpc.netty.NettyChannelBuilder;
 import io.grpc.netty.NettyServerBuilder;
 import io.grpc.stub.StreamObserver;
@@ -112,7 +113,11 @@ public class GrpcTest {
 
         assertThat(latch.await(2, TimeUnit.SECONDS)).isTrue();
 
-        assertThat(error.get()).isNotNull();
+        final Throwable out = error.get();
+        assertThat(out).isNotNull();
+        assertThat(out).isInstanceOf(StatusRuntimeException.class);
+        final StatusRuntimeException e = (StatusRuntimeException) out;
+        assertThat(e.getStatus()).isEqualTo(Status.INVALID_ARGUMENT);
     }
 
     @Test
