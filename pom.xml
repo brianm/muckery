@@ -24,10 +24,20 @@
         <dep.grpc.version>1.0.0-pre2</dep.grpc.version>
         <dep.protoc.version>3.0.0</dep.protoc.version>
 
-        <version.akka>2.4.0</version.akka>
+        <version.akka>2.4.9</version.akka>
     </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <version>1.7.21</version>
+        </dependency>
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-transport</artifactId>
+            <version>4.1.4.Final</version>
+        </dependency>
         <dependency>
             <groupId>io.grpc</groupId>
             <artifactId>grpc-netty</artifactId>
@@ -43,44 +53,37 @@
             <artifactId>grpc-stub</artifactId>
             <version>${dep.grpc.version}</version>
         </dependency>
-
-        <dependency>
-            <groupId>io.netty</groupId>
-            <artifactId>netty-tcnative-boringssl-static</artifactId>
-            <version>1.1.33.Fork14</version>
-            <classifier>${os.detected.classifier}</classifier>
-        </dependency>
-
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
             <version>18.0</version>
         </dependency>
-
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
             <version>3.4</version>
         </dependency>
-
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
             <version>2.7.4</version>
         </dependency>
-
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-annotations</artifactId>
             <version>2.7.4</version>
         </dependency>
-
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>
             <version>2.7.4</version>
         </dependency>
-
+        <dependency>
+            <groupId>io.atomix</groupId>
+            <artifactId>atomix-all</artifactId>
+            <version>1.0.0-rc9</version>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>com.squareup.okhttp3</groupId>
             <artifactId>okhttp</artifactId>
@@ -93,27 +96,23 @@
             <version>0.1.1</version>
             <scope>test</scope>
         </dependency>
-
         <dependency>
             <groupId>com.squareup.okhttp3</groupId>
             <artifactId>mockwebserver</artifactId>
             <version>3.2.0</version>
             <scope>test</scope>
         </dependency>
-
         <dependency>
             <groupId>org.immutables</groupId>
             <artifactId>value</artifactId>
             <version>2.2.10</version>
             <scope>provided</scope>
         </dependency>
-
         <dependency>
             <groupId>io.airlift</groupId>
             <artifactId>airline</artifactId>
             <version>0.7</version>
         </dependency>
-
         <dependency>
             <groupId>com.typesafe.akka</groupId>
             <artifactId>akka-actor_2.11</artifactId>
@@ -135,14 +134,12 @@
             <version>${version.akka}</version>
             <scope>test</scope>
         </dependency>
-
         <dependency>
             <groupId>org.hdrhistogram</groupId>
             <artifactId>HdrHistogram</artifactId>
             <version>2.1.6</version>
             <scope>test</scope>
         </dependency>
-
         <dependency>
             <groupId>org.joda</groupId>
             <artifactId>joda-money</artifactId>
@@ -172,7 +169,6 @@
             <version>0.3.5</version>
             <scope>test</scope>
         </dependency>
-
         <dependency>
             <groupId>org.jdbi</groupId>
             <artifactId>jdbi</artifactId>
@@ -185,14 +181,12 @@
             <version>1.4.191</version>
             <scope>test</scope>
         </dependency>
-
         <dependency>
             <groupId>com.hubspot.rosetta</groupId>
             <artifactId>RosettaJdbi</artifactId>
             <version>3.10.10</version>
             <scope>test</scope>
         </dependency>
-
     </dependencies>
 
     <build>
