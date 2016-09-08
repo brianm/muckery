@@ -3,6 +3,7 @@ package org.skife.muckery.jdbi.immutables;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.hubspot.rosetta.jdbi.BindWithRosetta;
 import com.hubspot.rosetta.jdbi.RosettaMapperFactory;
 import com.hubspot.rosetta.jdbi.RosettaObjectMapperOverride;
 import org.immutables.value.Value;
@@ -11,6 +12,9 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.skife.jdbi.v2.DBI;
 import org.skife.jdbi.v2.Handle;
+import org.skife.jdbi.v2.sqlobject.Bind;
+import org.skife.jdbi.v2.sqlobject.SqlQuery;
+import org.skife.jdbi.v2.sqlobject.SqlUpdate;
 import org.skife.muckery.jdbi.H2Rule;
 
 import java.util.List;
@@ -29,6 +33,25 @@ public class ImmutableMappingTest {
         try (Handle h = this.dbi.open()) {
             h.execute("create table something (id int primary key, name varchar) ");
         }
+    }
+
+    @Test
+    public void testBinding() throws Exception {
+        try (Handle h = this.dbi.open()) {
+            rosetify(h);
+            final Dao dao = h.attach(Dao.class);
+            dao.insert(ImmutableSomething.builder().id(1).name("Brian").build());
+            final Something b = dao.find(1);
+            assertThat(b).isEqualTo(ImmutableSomething.builder().id(1).name("Brian").build());
+        }
+    }
+
+    public interface Dao {
+        @SqlUpdate("insert into something (id, name) values (:id, :name)")
+        void insert(@BindWithRosetta Something s);
+
+        @SqlQuery("select id, name from something where id = :id")
+        Something find(@Bind("id") int id);
     }
 
 
@@ -72,7 +95,7 @@ public class ImmutableMappingTest {
 
     @Value.Immutable
     @JsonDeserialize(as = ImmutableSomething.class)
-    interface Something {
+    public interface Something {
         Integer id();
 
         String name();
