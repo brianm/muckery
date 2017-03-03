@@ -1,5 +1,6 @@
 package org.skife.muckery.circuits;
 
+import net.jodah.failsafe.AsyncFailsafe;
 import net.jodah.failsafe.CircuitBreaker;
 import net.jodah.failsafe.CircuitBreakerOpenException;
 import net.jodah.failsafe.Failsafe;
@@ -36,23 +37,22 @@ public class FailsafeTest {
                                                 .withDelay(1, TimeUnit.SECONDS)
                                                 .withFailureThreshold(1, 1);
 
-        CompletableFuture<String> f = Failsafe.with(cb)
-                                              .with(clock)
-                                              .future(() -> service.execute(() -> "hello"));
+        AsyncFailsafe<?> fs = Failsafe.with(cb)
+                                      .with(clock)
+                                      .withFallback(Failsafer.bounce());
+
+        CompletableFuture<String> f = fs.future(() -> service.execute(() -> "hello"));
         f.get();
         assertThat(f).isCompletedWithValue("hello");
 
-        f = Failsafe.with(cb).with(clock).future(() -> service.execute(() -> {
+        f = fs.future(() -> service.execute(() -> {
             throw new RuntimeException("NooOoOooO");
         }));
 
         assertThatThrownBy(f::get).hasCauseInstanceOf(RuntimeException.class);
 
         assertThat(cb.getState()).isEqualTo(CircuitBreaker.State.OPEN);
-        f = Failsafe.with(cb)
-                    .with(clock)
-                    .withFallback(Failsafer.bounce())
-                    .future(() -> service.execute(() -> "yes"));
+        f = fs.future(() -> service.execute(() -> "yes"));
 
         assertThatThrownBy(f::get).hasCauseInstanceOf(CircuitBreakerOpenException.class);
     }
