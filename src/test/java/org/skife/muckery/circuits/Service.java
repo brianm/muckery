@@ -10,7 +10,13 @@ public class Service implements AutoCloseable {
 
     public <T> CompletableFuture<T> execute(Supplier<T> s) {
         CompletableFuture<T> f = new CompletableFuture<>();
-        threads.submit(() -> f.complete(s.get()));
+        threads.submit(() -> {
+            try {
+                f.complete(s.get());
+            } catch (Exception e) {
+                f.completeExceptionally(e);
+            }
+        });
         return f;
     }
 

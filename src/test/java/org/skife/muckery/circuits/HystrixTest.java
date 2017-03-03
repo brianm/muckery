@@ -9,7 +9,6 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Supplier;
 
@@ -26,22 +25,23 @@ public class HystrixTest {
     }
 
     @After
-    public void tearDown() throws Exception
-    {
+    public void tearDown() throws Exception {
         service.close();
     }
 
     @Test
     public void testFoo() throws Exception {
-
         CompletableFuture<String> f = service.execute(() -> "hello world");
+        f.get();
         assertThat(f).isCompleted()
                      .isCompletedWithValue("hello world");
     }
 
     @Test
     public void testWithCommand() throws Exception {
-        ServiceCommand s1 = new ServiceCommand(service, () -> {throw new IllegalStateException("1");});
+        ServiceCommand s1 = new ServiceCommand(service, () -> {
+            throw new IllegalStateException("1");
+        });
 
         ServiceCommand s2 = new ServiceCommand(service, () -> "2");
 
@@ -55,7 +55,9 @@ public class HystrixTest {
     @Ignore
     @Test
     public void testWithSempaphore() throws Exception {
-        SemCommand s1 = new SemCommand(service, () -> {throw new IllegalStateException("1");});
+        SemCommand s1 = new SemCommand(service, () -> {
+            throw new IllegalStateException("1");
+        });
 
         SemCommand s2 = new SemCommand(service, () -> "2");
 
@@ -91,11 +93,16 @@ public class HystrixTest {
         public SemCommand(Service service, Supplier<String> arg) {
             super(HystrixCommand.Setter.withGroupKey(HystrixCommandGroupKey.Factory.asKey("semaphore"))
                                        .andCommandPropertiesDefaults(HystrixCommandProperties.Setter()
-                                                                                             .withExecutionTimeoutEnabled(true)
-                                                                                             .withCircuitBreakerEnabled(true)
-                                                                                             .withExecutionTimeoutInMilliseconds(1)
-                                                                                             .withCircuitBreakerErrorThresholdPercentage(1)
-                                                                                             .withExecutionIsolationStrategy(HystrixCommandProperties.ExecutionIsolationStrategy.SEMAPHORE)));
+                                                                                             .withExecutionTimeoutEnabled(
+                                                                                                     true)
+                                                                                             .withCircuitBreakerEnabled(
+                                                                                                     true)
+                                                                                             .withExecutionTimeoutInMilliseconds(
+                                                                                                     1)
+                                                                                             .withCircuitBreakerErrorThresholdPercentage(
+                                                                                                     1)
+                                                                                             .withExecutionIsolationStrategy(
+                                                                                                     HystrixCommandProperties.ExecutionIsolationStrategy.SEMAPHORE)));
             this.service = service;
             this.arg = arg;
         }
