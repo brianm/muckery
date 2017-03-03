@@ -43,16 +43,16 @@ public class FailsafeTest {
         CompletableFuture<String> f = fs.future(() -> service.execute(() -> "hello"));
         f.get();
         assertThat(f).isCompletedWithValue("hello");
+        assertThat(cb.getState()).isEqualTo(CircuitBreaker.State.CLOSED);
 
         f = fs.future(() -> service.execute(() -> {
             throw new RuntimeException("NooOoOooO");
         }));
-
-        assertThatThrownBy(f::get).hasCauseInstanceOf(RuntimeException.class);
-
+        assertThatThrownBy(f::get).hasCauseInstanceOf(RuntimeException.class)
+                                  .hasMessageContaining("NooOoOooO");
         assertThat(cb.getState()).isEqualTo(CircuitBreaker.State.OPEN);
-        f = fs.future(() -> service.execute(() -> "yes"));
 
+        f = fs.future(() -> service.execute(() -> "yes"));
         assertThatThrownBy(f::get).hasCauseInstanceOf(CircuitBreakerOpenException.class);
     }
 }
