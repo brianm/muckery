@@ -27,7 +27,6 @@ public class FailsafeTest {
 
     @After
     public void tearDown() throws Exception {
-        clock.shutdown();
         service.close();
     }
 
