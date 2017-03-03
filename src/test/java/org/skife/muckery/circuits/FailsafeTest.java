@@ -52,9 +52,7 @@ public class FailsafeTest {
         f = Failsafe.with(cb)
                     .with(clock)
                     .withFallback(Failsafer.bounce())
-                    .future(() -> service.execute(() -> {
-                        throw new RuntimeException("NooOoOooO");
-                    }));
+                    .future(() -> service.execute(() -> "yes"));
 
         assertThatThrownBy(f::get).hasCauseInstanceOf(CircuitBreakerOpenException.class);
     }
