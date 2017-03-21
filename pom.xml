@@ -21,7 +21,7 @@
         <basepom.check.fail-license>false</basepom.check.fail-license>
         <main.class>org.skife.muckery.Main</main.class>
 
-        <dep.grpc.version>1.0.0-pre2</dep.grpc.version>
+        <dep.grpc.version>1.2.0</dep.grpc.version>
         <dep.protoc.version>3.0.0</dep.protoc.version>
 
         <version.akka>2.4.9</version.akka>
@@ -82,7 +82,7 @@
         <dependency>
             <groupId>io.atomix</groupId>
             <artifactId>atomix-all</artifactId>
-            <version>1.0.0-rc9</version>
+            <version>1.0.3</version>
             <scope>test</scope>
         </dependency>
         <dependency>

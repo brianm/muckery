@@ -5,7 +5,6 @@ import io.atomix.catalyst.transport.Address;
 import io.atomix.catalyst.transport.netty.NettyTransport;
 import io.atomix.concurrent.DistributedLock;
 import io.atomix.copycat.server.storage.Storage;
-import io.atomix.group.DistributedGroup;
 import org.junit.Test;
 import org.skife.muckery.NetUtil;
 

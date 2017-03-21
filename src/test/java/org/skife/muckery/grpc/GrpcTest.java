@@ -5,13 +5,14 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.ListenableFuture;
 import io.grpc.ManagedChannel;
+import io.grpc.ManagedChannelBuilder;
 import io.grpc.Metadata;
 import io.grpc.Server;
+import io.grpc.ServerBuilder;
 import io.grpc.Status;
 import io.grpc.StatusException;
 import io.grpc.StatusRuntimeException;
 import io.grpc.netty.NettyChannelBuilder;
-import io.grpc.netty.NettyServerBuilder;
 import io.grpc.stub.StreamObserver;
 import org.junit.After;
 import org.junit.Before;
@@ -43,18 +44,17 @@ public class GrpcTest {
     public void setUp() throws Exception {
 
         final int port = NetUtil.findUnusedPort();
-        this.server = NettyServerBuilder.forPort(port)
-                                        .executor(this.exec)
-                                        .addService(new HelloService())
-                                        .build()
-                                        .start();
+        this.server = ServerBuilder.forPort(port)
+                                   .executor(this.exec)
+                                   .addService(new HelloService())
+                                   .build()
+                                   .start();
 
 
-        this.channel = NettyChannelBuilder.forAddress("127.0.0.1", port)
-                                          .executor(this.exec)
-                                          .directExecutor()
-                                          .usePlaintext(true)
-                                          .build();
+        this.channel = ManagedChannelBuilder.forAddress("127.0.0.1", port)
+                                            .executor(this.exec)
+                                            .usePlaintext(true)
+                                            .build();
     }
 
     @After
