@@ -5,6 +5,7 @@ import io.atomix.catalyst.transport.Address;
 import io.atomix.catalyst.transport.netty.NettyTransport;
 import io.atomix.concurrent.DistributedLock;
 import io.atomix.copycat.server.storage.Storage;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.skife.muckery.NetUtil;
 
@@ -20,6 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class AtomixTest {
     @Test
+    @Ignore
     public void testFoo() throws Exception {
 
         final Path tmp = Files.createTempDirectory(this.getClass().getName());
