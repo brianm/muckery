@@ -36,5 +36,24 @@ class KotlinTest {
         @SqlQuery("select name from something where id = :0")
         fun findSomething(id: Int): String?
     }
+
+
+    @Test
+    fun testFun() {
+        val (hello, world) = pair();
+        assertThat(hello).isEqualTo("hello")
+        assertThat(world).isEqualTo("world")
+
+        val (one, two, three) = triple();
+
+    }
+
+    fun pair(): Pair<String, String> {
+        return Pair("hello", "world")
+    }
+
+    fun triple(): Triple<Int, Int, Int> {
+        return Triple(1,2,3);
+    }
 }
 
