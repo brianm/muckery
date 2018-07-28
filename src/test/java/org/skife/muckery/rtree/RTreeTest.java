@@ -28,11 +28,11 @@ public class RTreeTest {
         final Point marriotWhitefield = Geometries.pointGeographic(12.9796, 77.7277);
         final Point seattleOffice = Geometries.pointGeographic(47.607148, -122.3381338);
 
-        airports.nearest(marriotWhitefield, 200, 1).defaultIfEmpty(NONE).subscribe(entry -> {
+        airports.nearest(marriotWhitefield, 200 /* km */, 1).defaultIfEmpty(NONE).subscribe(entry -> {
             assertThat(entry.value()).isEqualTo("BLR");
         });
 
-        airports.nearest(seattleOffice, 200, 1).defaultIfEmpty(NONE).subscribe(entry -> {
+        airports.nearest(seattleOffice, 200 /* km */, 1).defaultIfEmpty(NONE).subscribe(entry -> {
             assertThat(entry.value()).isEqualTo("BFI");
         });
 
@@ -42,6 +42,7 @@ public class RTreeTest {
         RTree<String, Geometry> tree = RTree.create();
 
         // load and parse airports.dat to populate airports into our rtree
+        // data is sourced initially from https://openflights.org/data.html
         try (InputStream in = Resources.getResource("airports.dat").openStream()) {
             CsvParserSettings settings = new CsvParserSettings();
             settings.detectFormatAutomatically(',');
